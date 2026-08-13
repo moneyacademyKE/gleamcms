@@ -1,0 +1,19 @@
+# Gleam / Erlang
+/build/
+/_build/
+*.beam
+*.dump
+
+# Local application data and generated output
+/Mnesia.*
+/gleamcms_output/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/
