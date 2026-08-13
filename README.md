@@ -22,7 +22,7 @@ presentation stay cleanly separable.
 
 ```
 src/
-  gleamcms.gleam            # entry point: boots AaronDB + Wisp on :4000
+  gleamcms.gleam            # entry point: boots AaronDB + Wisp on the configured port
   gleamcms/
     ai/designer.gleam       # AI theme designer (gemini, shell-free)
     builder/generator.gleam # static site generator (per-theme HTML + RSS)
@@ -38,21 +38,39 @@ src/
   gleamcms_httpc_ffi.erl   # Erlang FFI (http, env, hmac, safe spawn)
 ```
 
-## Configure (required — fail-closed)
+## Configure (fail-closed)
 
-gleamcms refuses to run without explicit secrets. Set these before `gleam run`:
+`gleamcms` refuses to start unless both secrets are present and non-blank.
+Configuration is loaded once during boot and then passed explicitly through the
+request and generation layers. The process does not re-read environment
+variables per request.
 
-| Env var | Purpose | Required |
-|---|---|---|
-| `GLEAMCMS_SECRET` | Long random string; signs the admin session cookie. **Server refuses to start if unset.** | yes |
-| `GLEAMCMS_ADMIN_TOKEN` | The password typed at `/admin/login`. Login is disabled (fail-closed) if unset. | yes |
-| `GLEAMCMS_OUTPUT_DIR` | Where generated sites are written/served from. Defaults to `./gleamcms_output`. | no |
+| Env var | Required | Default | Validation / purpose |
+|---|---:|---|---|
+| `GLEAMCMS_SECRET` | yes | none | Non-blank signing secret for the stateless admin session cookie. Never log its value. |
+| `GLEAMCMS_ADMIN_TOKEN` | yes | none | Non-blank password accepted by `/admin/login`. Never log its value. |
+| `GLEAMCMS_OUTPUT_DIR` | no | `gleamcms_output` | Non-blank path for generated sites and output serving. The application creates generated subdirectories as needed. |
+| `GLEAMCMS_PORT` | no | `4000` | Integer from `1` through `65535`; invalid values fail startup. |
+| `GLEAMCMS_COOKIE_MAX_AGE` | no | `86400` | Integer seconds from `60` through `2592000` (30 days); invalid values fail startup. |
+
+Startup diagnostics report only the configured port, output directory, and
+whether admin access is enabled. They do not report secret or token values.
+Invalid configuration is logged and the server does not start.
+
+Generate disposable local credentials like this:
 
 ```sh
 export GLEAMCMS_SECRET=$(openssl rand -hex 32)
 export GLEAMCMS_ADMIN_TOKEN=$(openssl rand -hex 16)
+export GLEAMCMS_OUTPUT_DIR=./gleamcms_output
+export GLEAMCMS_PORT=4000
+export GLEAMCMS_COOKIE_MAX_AGE=86400
 gleam run   # serves on http://localhost:4000
 ```
+
+Do not commit shell history, `.env` files, generated output, or production
+credentials. The repository `.gitignore` excludes local build/Mnesia state and
+environment files.
 
 ## Dependency note
 
