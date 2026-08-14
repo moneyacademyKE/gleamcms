@@ -63,20 +63,21 @@ src/
 
 ---
 
-## Gap Analysis: GleamCMS vs. External CMS Alternatives
+## Gap Analysis: GleamCMS vs. Phoenix/Elixir (Beacon), Ghost v5, and WordPress
 
-| Dimension | GleamCMS (AaronDB) | Payload CMS v3 | Strapi v5 | Ghost v5 | Sanity Content Lake |
-|---|---|---|---|---|---|
-| **Data Model** | **EAV Datalog Facts (Immutable Datoms)** | Relational SQL / Document | Relational SQL (MySQL/PG) | Relational SQL (MySQL/SQLite) | JSON-LD Structured Documents |
-| **Mutation Model** | **Atomic Fact Assertions** | In-place row overwrite | In-place row overwrite | In-place row overwrite | Document CRDT mutation |
-| **Temporal History** | **Native Fact Retention** | Custom version tables | Draft/Publish duplicates | Single `updated_at` | Document history API |
-| **Query Engine** | **Declarative Datalog Patterns** | TypeScript ORM builder | REST filters / GraphQL | Knex ORM queries | GROQ (Graph Queries) |
-| **SSG Projections** | **Atomic Staging & Rename Swap** | Next.js Server Components | Headless API only | Dynamic SSR only | Headless API only |
-| **Content Safety** | **AST Markdown Parsing & Escaping** | DOMPurify / Slate AST | Sanitized Rich Text | Lexical AST Renderer | Portable Text Serializer |
-| **Webhooks & Events** | **Signed HMAC-SHA256 Payloads** | Custom lifecycle hooks | Custom webhook UI | Webhook integrations | Managed GROQ webhooks |
-| **Auth Boundary** | **POST-Only Form + HMAC Cookies** | Scoped JWTs & Cookies | Role JWTs & Permissions | Password + 2FA / Session | OAuth / SAML SSO |
-| **Runtime Footprint** | **~30 MB (Single BEAM node)** | ~250 MB (Node + SQL DB) | ~350 MB (Node + SQL DB) | ~200 MB (Node + MySQL) | Cloud SaaS (Proprietary) |
-| **File Sizing** | **Strictly < 500 LOC per file** | Large multi-kLOC files | Large controllers | Large monoliths | Modular React components |
+| Dimension | GleamCMS (BEAM Datalog) | Phoenix / Elixir (Beacon) | Ghost v5 (Node.js) | WordPress (PHP 8 / Gutenberg) |
+|---|---|---|---|---|
+| **Language & Typing** | **Gleam (Static Inferred, BEAM)** | Elixir (Dynamic, Dialyzer optional) | TypeScript/JS (Erased at runtime) | PHP (Dynamic / gradual typing) |
+| **Data Model** | **EAV Datalog (Immutable Datoms)** | Relational SQL (Ecto Schemas) | Relational SQL (Bookshelf/Knex) | Relational SQL + `wp_postmeta` Key-Value |
+| **Mutation Model** | **Atomic Fact Assertions** | In-place row overwrite (`UPDATE`) | In-place row overwrite (`UPDATE`) | In-place row overwrite (`UPDATE`) |
+| **Temporal History** | **Native Temporal Retention** | Bolt-on version tables | Single `updated_at` | Revision table bloat (SQL rows) |
+| **Full-Text Search** | **In-Memory Probabilistic BM25** | External Postgres `tsvector` | External Elasticsearch / Algolia | Naive SQL `LIKE %...%` |
+| **SSG Projections** | **Atomic Staging Directory Swap** | Phoenix LiveView Dynamic SSR | Dynamic SSR + Headless API | Dynamic PHP execution |
+| **Client Footprint** | **0 KB (Zero CSS, Zero JS)** | ~100 KB (LiveView WebSocket) | ~500 KB (Portal / Frontend JS) | ~1 MB – 5 MB (Gutenberg, jQuery, plugins) |
+| **Dependencies** | **0 External Daemons (Mnesia)** | 1 DB Daemon (PostgreSQL) | 1 DB (MySQL) + Mailgun | Web Server + PHP-FPM + MySQL |
+| **Memory Footprint** | **~30 MB (Single binary)** | ~80 MB – 150 MB | ~250 MB | ~300 MB – 1 GB |
+| **Security Surface** | **Minimal (Zero JS, AST escaping)** | Medium (Channel auth) | High (NPM dependency tree) | Critical (Plugin vulnerability ecosystem) |
+| **File Sizing** | **Strictly < 500 LOC per file** | Large multi-kLOC contexts | Large Node.js controllers | Monolithic legacy PHP files |
 
 ---
 
