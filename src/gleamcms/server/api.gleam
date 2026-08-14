@@ -8,6 +8,7 @@ import gleam/json
 import gleam/list
 import gleam/result
 import gleam/string
+import gleam/uri
 import gleamcms/ai/designer
 import gleamcms/builder/generator
 import gleamcms/config
@@ -91,7 +92,37 @@ pub fn handle_save(req: Request, db: aarondb.Db) -> Response {
             }
           }
         }
-        Error(_) -> wisp.bad_request("Invalid JSON")
+        Error(_) -> {
+          case uri.parse_query(body) {
+            Ok(pairs) -> {
+              let title = list.key_find(pairs, "title") |> result.unwrap("")
+              let slug = list.key_find(pairs, "slug") |> result.unwrap("")
+              let content = list.key_find(pairs, "content") |> result.unwrap("")
+              let status =
+                list.key_find(pairs, "status") |> result.unwrap("published")
+              let section_type =
+                list.key_find(pairs, "section_type")
+                |> result.unwrap("content")
+
+              let p =
+                post.new_post(slug, title, slug, content)
+                |> post.with_status(post.string_to_status(status))
+                |> post.with_section_type(section_type)
+
+              case post.save_post(db, p) {
+                Ok(_) -> {
+                  logging.log(logging.Info, "Saved form post: " <> slug)
+                  wisp.redirect(to: "/admin")
+                }
+                Error(errors) -> {
+                  let msg = list.first(errors) |> result.unwrap("")
+                  wisp.bad_request("Validation failed: " <> msg)
+                }
+              }
+            }
+            Error(_) -> wisp.bad_request("Invalid request format")
+          }
+        }
       }
     }
     _ -> wisp.method_not_allowed([http.Post])
@@ -143,10 +174,19 @@ pub fn handle_generate(
 ) -> Response {
   case req.method {
     http.Post -> {
-      let theme_param =
-        wisp.get_query(req)
-        |> list.key_find("theme")
-        |> result.unwrap("Default Dark")
+      use body <- wisp.require_string_body(req)
+      let is_form = case uri.parse_query(body) {
+        Ok(pairs) -> list.key_find(pairs, "theme")
+        Error(_) -> Error(Nil)
+      }
+
+      let theme_param = case is_form {
+        Ok(t) -> t
+        Error(_) ->
+          wisp.get_query(req)
+          |> list.key_find("theme")
+          |> result.unwrap("Default Dark")
+      }
 
       logging.log(logging.Info, "Generate site: theme=" <> theme_param)
 
@@ -174,17 +214,22 @@ pub fn handle_generate(
           <> " sites",
       )
 
-      let body =
-        "{\"status\": \"ok\", \"sites\": "
-        <> int.to_string(sites_built)
-        <> ", \"pages\": "
-        <> int.to_string(total_pages)
-        <> ", \"errors\": "
-        <> int.to_string(total_errors)
-        <> "}"
+      case is_form {
+        Ok(_) -> wisp.redirect(to: "/sites")
+        Error(_) -> {
+          let resp_body =
+            "{\"status\": \"ok\", \"sites\": "
+            <> int.to_string(sites_built)
+            <> ", \"pages\": "
+            <> int.to_string(total_pages)
+            <> ", \"errors\": "
+            <> int.to_string(total_errors)
+            <> "}"
 
-      wisp.ok()
-      |> wisp.json_body(body)
+          wisp.ok()
+          |> wisp.json_body(resp_body)
+        }
+      }
     }
     _ -> wisp.method_not_allowed([http.Post])
   }

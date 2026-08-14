@@ -17,7 +17,7 @@ pub fn add_security_headers(resp: Response) -> Response {
   )
   |> wisp.set_header(
     "content-security-policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+    "default-src 'self'; script-src 'none'; style-src 'none'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
   )
 }
 
@@ -47,78 +47,122 @@ pub fn serve_home(_req: Request) -> Response {
 <head>
   <meta charset=\"UTF-8\">
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-  <title>GleamCMS - Sovereign Content</title>
-  <style>
-    :root { --bg: #0f172a; --text: #f8fafc; --accent: #3b82f6; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 3rem; max-width: 500px; text-align: center; backdrop-filter: blur(12px); }
-    h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    h1 span { color: var(--accent); }
-    p { opacity: 0.7; margin-bottom: 2rem; }
-    a { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; margin: 0.25rem; }
-    a.ghost { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
-    .status { margin-top: 2rem; font-size: 0.8rem; opacity: 0.4; }
-  </style>
+  <title>GleamCMS — Sovereign Content</title>
 </head>
 <body>
-  <div class=\"card\">
-    <h1>Gleam<span>CMS</span></h1>
-    <p>A Fact-Oriented, Sovereign Content Management System built on AaronDB v2.1.0.</p>
-    <a href=\"/admin\">Admin Editor</a>
-    <a class=\"ghost\" href=\"/health\">Health Check</a>
-    <div class=\"status\">⚡ 50 Themes &bull; CAS Media &bull; Datalog Engine</div>
-  </div>
+  <header>
+    <h1>GleamCMS</h1>
+    <p>A fact-oriented, sovereign content management system built on the AaronDB Datalog engine.</p>
+    <nav>
+      <strong><a href=\"/admin\">Open Studio</a></strong> |
+      <a href=\"/sites\">Generated Sites</a> |
+      <a href=\"/health\">Health Check</a>
+    </nav>
+  </header>
+  <hr />
+  <main>
+    <section>
+      <h2>Architecture & Capabilities</h2>
+      <ul>
+        <li><strong>Pure Gleam:</strong> 100% type-safe functional codebase on Erlang/BEAM.</li>
+        <li><strong>Zero CSS, Zero JavaScript:</strong> Pure semantic HTML5 hypermedia engine.</li>
+        <li><strong>AaronDB Datalog:</strong> Content modeled as immutable fact datoms.</li>
+        <li><strong>Atomic SSG Projections:</strong> Isolated staging directory swaps.</li>
+        <li><strong>CAS Media Storage:</strong> Content-addressed SHA-256 asset storage.</li>
+      </ul>
+    </section>
+  </main>
+  <hr />
+  <footer>
+    <p><small>&copy; 2026 Sovereign Individual. Pure Gleam (Zero CSS, Zero JS).</small></p>
+  </footer>
 </body>
 </html>"
   wisp.ok()
   |> wisp.html_body(html)
 }
 
-pub fn serve_editor(_req: Request) -> Response {
-  let html = editor.render()
+pub fn serve_editor(req: Request) -> Response {
+  let query = wisp.get_query(req)
+  let html = case list.key_find(query, "template") {
+    Ok("hero") ->
+      editor.render_with_template(
+        "Transform Ideas Into Sovereign Reality",
+        "hero-banner",
+        "# Transform Ideas Into Sovereign Reality\n\nBuild lightning-fast, fact-oriented digital properties without accidental complexity.\n\n[Explore Architecture](/about) · [Get Started](https://gleam.run)",
+        "hero",
+      )
+    Ok("features") ->
+      editor.render_with_template(
+        "Core Architectural Capabilities",
+        "core-features",
+        "## Architectural Pillars\n\n- **Pure Datalog Core**: Content modeled as immutable fact datoms.\n- **Atomic Projections**: Zero partial build tearing on static outputs.\n- **Sovereign Single-Binary**: Self-hosted on the BEAM VM with 30MB footprint.",
+        "features",
+      )
+    Ok("stats") ->
+      editor.render_with_template(
+        "System Performance Metrics",
+        "system-stats",
+        "## Real-time Metrics\n\n- **51** Curated Native Themes\n- **30ms** Average Dynamic Latency\n- **100%** Type Safety on BEAM\n- **0** External Database Daemons",
+        "stats",
+      )
+    Ok("testimonial") ->
+      editor.render_with_template(
+        "Architect Testimonials",
+        "architect-testimonial",
+        "> \"GleamCMS simplified our entire publishing infrastructure. We eliminated three database daemons and gained temporal audit history for free.\"\n>\n> — **Alex Mercer**, Principal Engineer at Sovereign Systems",
+        "content",
+      )
+    Ok("pricing") ->
+      editor.render_with_template(
+        "Transparent Deployment Plans",
+        "pricing-plans",
+        "## Deployment Tiers\n\n- **Sovereign Edge**: Open source single-binary node.\n- **Studio Pro**: AI Theme Synthesis & Webhook Dispatch.\n- **Enterprise Mesh**: Multi-node Datalog cluster synchronization.",
+        "content",
+      )
+    Ok("article") ->
+      editor.render_with_template(
+        "The Epochal Time Model in Modern CMS Architecture",
+        "epochal-time-model",
+        "# The Epochal Time Model in Modern CMS Architecture\n\nIn conventional databases, updating a row destroys the previous state. By modeling changes as immutable values, we retain complete historical provenance by default.\n\n```gleam\n// Content as immutable Datalog facts\naarondb.transact(db, [\n  fact.str(\"cms.post/title\", \"Sovereign Web\"),\n  fact.str(\"cms.post/status\", \"published\")\n])\n```\n\n### Why Values Matter\nWhen content is treated as an immutable value, static site generation becomes a pure deterministic projection function.",
+        "content",
+      )
+    _ -> editor.render()
+  }
   wisp.ok()
   |> wisp.html_body(html)
 }
 
 pub fn serve_sites(_db: aarondb.Db, cfg: config.Config) -> Response {
   let sites = generator.list_generated(cfg)
-  let cards =
+  let items =
     list.map(sites, fn(slug) {
-      "<a class=\"site-card\" href=\"/gleamcms_output/"
+      "<li><strong><a href=\"/gleamcms_output/"
       <> slug
       <> "/index.html\">"
-      <> "<div class=\"site-name\">"
       <> slug
-      <> "</div>"
-      <> "<div class=\"site-links\">"
-      <> "<span>index</span> · <span>rss</span>"
-      <> "</div></a>"
+      <> "</a></strong> (<a href=\"/gleamcms_output/"
+      <> slug
+      <> "/feed.xml\">RSS Feed</a>)</li>"
     })
   let body = case sites {
     [] ->
-      "<p style='color:#94a3b8'>No sites generated yet. Use <code>POST /api/generate</code> first.</p>"
-    _ -> string.join(cards, "\n")
+      "<p>No sites generated yet. Open the <a href=\"/admin\">Studio</a> to generate one.</p>"
+    _ -> "<ul>" <> string.join(items, "\n") <> "</ul>"
   }
-  let html = "
-<!DOCTYPE html><html lang=\"en\"><head>
+  let html = "<!DOCTYPE html><html lang=\"en\"><head>
   <meta charset=\"UTF-8\">
-  <title>GleamCMS — Generated Sites</title>
-  <style>
-    :root{--bg:#0f172a;--card:rgba(255,255,255,0.05);--accent:#3b82f6;--text:#f8fafc}
-    body{font-family:monospace;background:var(--bg);color:var(--text);padding:2rem;margin:0}
-    h1{margin-bottom:2rem}a{color:inherit;text-decoration:none}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
-    .site-card{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.25rem;transition:border-color .2s,transform .2s;display:block}
-    .site-card:hover{border-color:var(--accent);transform:translateY(-2px)}
-    .site-name{font-weight:700;font-size:0.95rem;margin-bottom:0.5rem;color:var(--text)}
-    .site-links{color:#64748b;font-size:0.8rem}
-    .back{margin-bottom:1.5rem;display:inline-block;color:#64748b;font-size:0.85rem}
-    .back:hover{color:var(--accent)}
-  </style>
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+  <title>GleamCMS — Generated Sites Directory</title>
 </head><body>
-  <a class=\"back\" href=\"/admin\">← back to editor</a>
-  <h1>🌐 Generated Sites</h1>
-  <div class=\"grid\">" <> body <> "</div>
+  <header>
+    <h1>Generated Static Projections</h1>
+    <nav><a href=\"/admin\">← Back to Studio</a> | <a href=\"/\">Home</a></nav>
+  </header>
+  <hr />
+  <main>" <> body <> "</main>
+  <hr />
+  <footer><p><small>&copy; 2026 Sovereign Individual. Built with Pure Gleam.</small></p></footer>
 </body></html>"
   wisp.ok()
   |> wisp.html_body(html)
