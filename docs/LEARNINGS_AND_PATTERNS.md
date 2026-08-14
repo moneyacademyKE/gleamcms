@@ -49,3 +49,8 @@
 ## 9. Pluggable Storage Abstractions
 - Abstract Content-Addressed Storage (CAS) behind an immutable value interface (`StorageAdapter`).
 - Validate incoming file extensions against a strict whitelist before computing SHA-256 digests.
+
+## 10. Accessible Neuromorphism & Click-First Composition
+- Leverage dual-directional shadow physics (`--neuro-raised`, `--neuro-inset`) to provide instant tactile affordance for mouse clicks.
+- Pair tactile surfaces with high WCAG AAA text contrast to eliminate traditional neumorphism legibility pitfalls.
+- Expose atomic section templates (Hero, Features, Stats, Testimonial, Pricing, Article) as click-to-insert values that immediately hydrate real-time live preview projections.

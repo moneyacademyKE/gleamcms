@@ -107,3 +107,34 @@ To achieve production-grade parity with modern content platforms (Payload, Strap
   - All 45 tests passing.
 - **Negative:**
   - Raw unsafe HTML markup in Markdown content is escaped into safe text entities rather than rendered as arbitrary raw DOM.
+
+---
+
+## ADR 004: Accessible Neuromorphic Design System and Click-First Visual Studio
+
+### Status
+Accepted & Implemented (2026-08-14)
+
+### Context
+Previous editor workflows required manual schema configuration and typing Markdown from scratch. To provide a frictionless, click-driven content studio without complecting the backend Datalog fact model:
+1. The studio UI required prebuilt block templates (Hero, Features, Stats, Testimonial, Pricing, Article) insertable by single click.
+2. The visual interface needed a tactile, high-contrast Neuromorphic design system (`--neuro-raised`, `--neuro-inset`, tactile pressed states, cyan neon glows).
+3. The editor required split-screen real-time previewing and 1-click "Publish & Build" pipelines.
+
+### Decision
+1. **Neuromorphic CSS Tokens (`priv/static/editor.css`):**
+   - Implemented dual-directional light/shadow box-shadow tokens for extruded cards and inset pressed buttons.
+   - Maintained WCAG AAA contrast with dark slate surface backgrounds (`#0f172a`, `#141e33`, `#18243c`) and crisp text (`#f8fafc`).
+2. **Click-Driven Studio Shell (`editor/app.gleam`, `priv/static/editor.js`):**
+   - Built a block template library (Hero, Features, Stats, Testimonial, Pricing, Article) with 1-click insertion.
+   - Built a formatting ribbon (B, I, Code, H1, H2, Quotes, Lists, Links, Images).
+   - Built 1-click AI design chips and random theme palette triggers.
+   - Built real-time side-by-side live preview with Desktop/Mobile viewport toggling.
+   - Built a 1-click "Publish & Build" pipeline with interactive visual toast notifications.
+
+### Consequences
+- **Positive:**
+  - Creating, styling, and publishing sites can be completed entirely through mouse clicks.
+  - Zero cognitive friction while maintaining 100% backend fact immutability.
+  - State-of-the-art tactile aesthetic with zero client-side framework bloat.
+  - All source files remain strictly `< 500 LOC`.

@@ -1,0 +1,368 @@
+:root {
+  --bg-base: #0f172a;
+  --bg-surface: #141e33;
+  --bg-card: #18243c;
+  --bg-inset: #0c1322;
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  
+  --accent: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.35);
+  --success: #10b981;
+  --warning: #f59e0b;
+  
+  /* Neuromorphic Physics Tokens */
+  --neuro-raised: 6px 6px 14px rgba(0, 0, 0, 0.55), -4px -4px 10px rgba(255, 255, 255, 0.04);
+  --neuro-raised-sm: 3px 3px 8px rgba(0, 0, 0, 0.5), -2px -2px 6px rgba(255, 255, 255, 0.04);
+  --neuro-raised-hover: 8px 8px 18px rgba(0, 0, 0, 0.65), -5px -5px 12px rgba(255, 255, 255, 0.06);
+  --neuro-inset: inset 3px 3px 7px rgba(0, 0, 0, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+  --neuro-accent-raised: 4px 4px 12px rgba(0, 0, 0, 0.4), 0 0 15px var(--accent-glow);
+  
+  --border: rgba(255, 255, 255, 0.06);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+  background: var(--bg-base);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Header bar */
+.studio-header {
+  height: 60px;
+  background: var(--bg-surface);
+  box-shadow: var(--neuro-raised-sm);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.studio-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+  text-decoration: none;
+}
+.studio-logo span {
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent-glow);
+}
+
+.studio-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+/* Dual Pane Layout */
+.studio-container {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  flex: 1;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+
+@media (max-width: 1024px) {
+  .studio-container {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+/* Left Editor Pane */
+.editor-pane {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+/* Right Preview Pane */
+.preview-pane {
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  padding: 1rem;
+}
+
+.preview-header {
+  height: 48px;
+  background: var(--bg-card);
+  box-shadow: var(--neuro-raised-sm);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.preview-window-wrapper {
+  flex: 1;
+  background: var(--bg-inset);
+  box-shadow: var(--neuro-inset);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 0.5rem;
+}
+
+.preview-window {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  transition: width 0.3s ease;
+}
+
+.preview-window.mobile-view {
+  width: 375px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Section Titles */
+.section-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+/* Neuromorphic Chips & Buttons */
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.chip-btn {
+  background: var(--bg-card);
+  box-shadow: var(--neuro-raised-sm);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.chip-btn:hover {
+  box-shadow: var(--neuro-raised-hover);
+  border-color: rgba(56, 189, 248, 0.3);
+  transform: translateY(-1px);
+}
+
+.chip-btn:active, .chip-btn.active {
+  box-shadow: var(--neuro-inset);
+  background: var(--bg-inset);
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(1px);
+}
+
+/* Neuromorphic Format Ribbon */
+.format-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  background: var(--bg-inset);
+  box-shadow: var(--neuro-inset);
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.format-btn {
+  background: var(--bg-card);
+  box-shadow: var(--neuro-raised-sm);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.format-btn:hover {
+  color: var(--text-main);
+  border-color: var(--accent);
+}
+
+.format-btn:active {
+  box-shadow: var(--neuro-inset);
+  background: var(--bg-inset);
+  color: var(--accent);
+}
+
+/* Form Controls */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.input-text, .select-input {
+  background: var(--bg-inset);
+  box-shadow: var(--neuro-inset);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-text:focus, .select-input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--neuro-inset), 0 0 10px var(--accent-glow);
+}
+
+.textarea-content {
+  background: var(--bg-inset);
+  box-shadow: var(--neuro-inset);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0.9rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-family: ui-monospace, "Fira Code", monospace;
+  min-height: 190px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.textarea-content:focus {
+  border-color: var(--accent);
+  box-shadow: var(--neuro-inset), 0 0 10px var(--accent-glow);
+}
+
+/* Neuromorphic Primary & Secondary Actions */
+.btn-primary {
+  background: linear-gradient(135deg, #38bdf8, #0284c7);
+  box-shadow: var(--neuro-accent-raised);
+  color: #ffffff;
+  border: none;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5);
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  box-shadow: var(--neuro-raised-sm);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+}
+
+.btn-secondary:hover {
+  box-shadow: var(--neuro-raised-hover);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  box-shadow: var(--neuro-inset);
+  background: var(--bg-inset);
+  transform: translateY(1px);
+}
+
+/* Toast Notifications */
+.neuro-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--bg-card);
+  box-shadow: var(--neuro-raised-hover);
+  border: 1px solid var(--border);
+  padding: 0.85rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
