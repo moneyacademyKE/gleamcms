@@ -53,6 +53,7 @@ fn route_request(req: Request, db: aarondb.Db, cfg: config.Config) -> Response {
       case rest {
         ["posts"] -> api.handle_list_posts(db)
         ["search"] -> api.handle_search(req, db)
+        ["media", "upload"] -> api.handle_media_upload(req, cfg)
         ["publish"] -> api.handle_publish(req, db)
         ["save"] -> api.handle_save(req, db)
         ["facts", "sync"] -> api.handle_sync(req, db, cfg)

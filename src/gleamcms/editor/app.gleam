@@ -193,6 +193,33 @@ pub fn view(model: Model) -> Element(Nil) {
       ]),
     ]),
     html.hr([]),
+    // 4. Native Form for Media Uploads
+    html.section([], [
+      html.h2([], [element.text("Media Asset Storage (CAS)")]),
+      html.form(
+        [
+          attribute.method("POST"),
+          attribute.action("/api/media/upload"),
+          attribute.enctype("multipart/form-data"),
+        ],
+        [
+          html.fieldset([], [
+            html.legend([], [element.text("Upload Media Asset")]),
+            html.p([], [
+              html.label([], [
+                element.text("Choose File: "),
+                html.input([attribute.type_("file"), attribute.name("file")]),
+              ]),
+              element.text(" "),
+              html.button([attribute.type_("submit")], [
+                element.text("📤 Upload Asset"),
+              ]),
+            ]),
+          ]),
+        ],
+      ),
+    ]),
+    html.hr([]),
     html.footer([], [
       html.p([], [
         element.text(

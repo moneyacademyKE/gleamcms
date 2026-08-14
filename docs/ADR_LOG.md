@@ -226,3 +226,31 @@ Accepted & Implemented (2026-08-14)
   - Relevance-ranked full-text search with zero external search daemons.
   - Instant inverted index query performance ($<1\text{ms}$).
   - All 50 tests passing.
+
+---
+
+## ADR 008: Tightened System Wiring, Public Library Facade, and Automated Event Reactive Pipelines
+
+### Status
+Accepted & Implemented (2026-08-14)
+
+### Context
+1. Subsystems (CAS media uploads, BM25 search, background webhooks) existed as isolated modules without cohesive cross-layer wiring.
+2. The root module `gleamcms.gleam` only implemented `main()`, leaving no direct public library facade for external packages.
+3. Post publication did not automatically trigger background event webhooks.
+
+### Decision
+1. **Public Library Facade (`src/gleamcms.gleam`):**
+   - Exposed `start_server`, `init_db`, `search_posts`, `build_all_sites`, `save_post`, and `upload_media` directly on the root module namespace.
+2. **Automated Event Reactive Pipelines (`api.gleam` & `worker.gleam`):**
+   - Hooked `worker.async_dispatch_post_published` directly into `handle_publish` and `handle_save` whenever a post is published.
+3. **Pluggable Media Upload Endpoint (`api.gleam`, `router.gleam`, `app.gleam`):**
+   - Added `POST /api/media/upload` binary file upload handler with magic-byte validation and JSON metadata responses.
+   - Added native semantic HTML upload form in the Studio interface.
+
+### Consequences
+- **Positive:**
+  - 100% reachable subsystem wiring across all modules.
+  - High cohesion with single-responsibility module boundaries.
+  - Automated background webhook event dispatch on post publish.
+  - All 50 tests passing.

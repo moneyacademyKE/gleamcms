@@ -67,3 +67,7 @@
 ## 13. Native In-Memory BM25 Search without External Daemons
 - Leverage AaronDB's pure functional inverted BM25 index over published datom content.
 - Uncomplects search architecture by eliminating secondary Elasticsearch/Typesense daemons and sync queues while delivering term-frequency/inverse-document-frequency probabilistic relevance ranking.
+
+## 14. Cohesive Subsystem Wiring & Public Facade Design
+- Expose essential library interfaces (`start_server`, `init_db`, `search_posts`, `build_all_sites`, `save_post`, `upload_media`) directly on root package module.
+- Eliminate dangling or unrouted subsystems by ensuring every backend module (CAS media, BM25 search, webhooks) is fully reachable via HTTP API routes and semantic Studio forms.

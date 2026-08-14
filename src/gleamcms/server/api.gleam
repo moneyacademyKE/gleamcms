@@ -11,9 +11,11 @@ import gleam/string
 import gleam/uri
 import gleamcms/ai/designer
 import gleamcms/builder/generator
+import gleamcms/builder/storage
 import gleamcms/config
 import gleamcms/content/search
 import gleamcms/db/post.{Published}
+import gleamcms/runtime/worker
 import logging
 import wisp.{type Request, type Response}
 
@@ -84,6 +86,10 @@ pub fn handle_save(req: Request, db: aarondb.Db) -> Response {
           case post.save_post(db, p) {
             Ok(_) -> {
               logging.log(logging.Info, "Saved post: " <> r.slug)
+              case post.is_published(p) {
+                True -> worker.async_dispatch_post_published([], p)
+                False -> Nil
+              }
               wisp.ok()
               |> wisp.json_body("{\"status\": \"saved\"}")
             }
@@ -113,6 +119,10 @@ pub fn handle_save(req: Request, db: aarondb.Db) -> Response {
               case post.save_post(db, p) {
                 Ok(_) -> {
                   logging.log(logging.Info, "Saved form post: " <> slug)
+                  case post.is_published(p) {
+                    True -> worker.async_dispatch_post_published([], p)
+                    False -> Nil
+                  }
                   wisp.redirect(to: "/admin")
                 }
                 Error(errors) -> {
@@ -148,6 +158,7 @@ pub fn handle_publish(req: Request, db: aarondb.Db) -> Response {
           case post.save_post(db, p) {
             Ok(_) -> {
               logging.log(logging.Info, "Published post: " <> pub_req.slug)
+              worker.async_dispatch_post_published([], p)
               wisp.ok()
               |> wisp.json_body("{\"status\": \"ok\"}")
             }
@@ -370,4 +381,33 @@ pub fn handle_search(req: Request, db: aarondb.Db) -> Response {
     })
   let resp = json.to_string(json_matches)
   wisp.ok() |> wisp.json_body(resp)
+}
+
+pub fn handle_media_upload(req: Request, _cfg: config.Config) -> Response {
+  case req.method {
+    http.Post -> {
+      use bits <- wisp.require_bit_array_body(req)
+      let ext =
+        wisp.get_query(req)
+        |> list.key_find("ext")
+        |> result.unwrap("png")
+
+      case storage.store(storage.default_local_adapter(), bits, ext) {
+        Ok(asset) -> {
+          let resp =
+            json.object([
+              #("status", json.string("uploaded")),
+              #("hash", json.string(asset.hash)),
+              #("mime_type", json.string(asset.mime_type)),
+              #("public_url", json.string(asset.public_url)),
+              #("size_bytes", json.int(asset.size_bytes)),
+            ])
+            |> json.to_string
+          wisp.ok() |> wisp.json_body(resp)
+        }
+        Error(e) -> wisp.bad_request("Upload validation failed: " <> e)
+      }
+    }
+    _ -> wisp.method_not_allowed([http.Post])
+  }
 }
