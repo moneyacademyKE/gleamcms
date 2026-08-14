@@ -1,5 +1,6 @@
 import gleam/list
 import gleam/string
+import gleamcms/content/markdown
 import gleamcms/db/post.{type Post}
 import gleamcms/theme.{type Theme, Theme}
 
@@ -247,42 +248,47 @@ fn post_view(post: Post) -> String {
 }
 
 fn render_hero_section(post: Post) -> String {
+  let content = post.get_content(post) |> markdown.parse |> markdown.to_html
   "<header class=\"section hero-section\">
     <div class=\"hero-content\">
       <div class=\"accent-bar\"></div>
       <h1>" <> post.get_title(post) <> "</h1>
-      <div class=\"content\">" <> post.get_content(post) <> "</div>
+      <div class=\"content\">" <> content <> "</div>
     </div>
   </header>"
 }
 
 fn render_features_section(post: Post) -> String {
+  let content = post.get_content(post) |> markdown.parse |> markdown.to_html
   "<section class=\"section features-section\">
     <h2>" <> post.get_title(post) <> "</h2>
-    <div class=\"grid-container\">" <> post.get_content(post) <> "</div>
+    <div class=\"grid-container\">" <> content <> "</div>
   </section>"
 }
 
 fn render_stats_section(post: Post) -> String {
+  let content = post.get_content(post) |> markdown.parse |> markdown.to_html
   "<section class=\"section stats-section\">
-    <div class=\"stats-grid\">" <> post.get_content(post) <> "</div>
+    <div class=\"stats-grid\">" <> content <> "</div>
   </section>"
 }
 
 fn render_cta_section(post: Post) -> String {
+  let content = post.get_content(post) |> markdown.parse |> markdown.to_html
   "<section class=\"section cta-section\">
     <h2>" <> post.get_title(post) <> "</h2>
-    <div class=\"cta-content\">" <> post.get_content(post) <> "</div>
+    <div class=\"cta-content\">" <> content <> "</div>
   </section>"
 }
 
 fn render_content_section(post: Post) -> String {
+  let content = post.get_content(post) |> markdown.parse |> markdown.to_html
   "<article class=\"section content-section\">
     <header>
       <h1>" <> post.get_title(post) <> "</h1>
     </header>
     <div class=\"content\">
-      " <> post.get_content(post) <> "
+      " <> content <> "
     </div>
   </article>"
 }

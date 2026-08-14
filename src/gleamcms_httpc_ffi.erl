@@ -1,5 +1,5 @@
 -module(gleamcms_httpc_ffi).
--export([post/3, get_env/1, hmac_sha256/2, run_gemini/2]).
+-export([post/3, get_env/1, hmac_sha256/2, run_gemini/2, configure_mnesia_dir/1]).
 
 %% HMAC-SHA256, returned as lowercase hex. Used to sign the stateless admin
 %% session cookie. crypto is guaranteed running under the wisp/mist runtime.
@@ -26,7 +26,7 @@ run_gemini(SystemPrompt, UserPrompt) ->
             collect_port(Port, <<>>)
     end.
 
-%% Drain stdout chunks until the process exits, then close the port.
+%% Drain stdout chunks until the process exits, with 30s timeout bounding.
 collect_port(Port, Acc) ->
     receive
         {Port, {data, Chunk}} ->
@@ -39,7 +39,14 @@ collect_port(Port, Acc) ->
             {error, iolist_to_binary([
                 <<"gemini exited with code ">>, integer_to_binary(Code)
             ])}
+    after 30000 ->
+        try port_close(Port) catch _:_ -> ok end,
+        {error, <<"gemini subprocess timed out after 30 seconds">>}
     end.
+
+configure_mnesia_dir(Dir) ->
+    ok = application:set_env(mnesia, dir, binary_to_list(Dir)),
+    ok.
 
 post(Url, Headers, Body) ->
     inets:start(),

@@ -1,7 +1,7 @@
 import gleam/int
 import gleam/result
 import gleam/string
-import gleamcms/ai/designer
+import gleamcms/runtime/ffi
 
 /// Runtime configuration loaded once at boot and threaded through the app.
 pub type Config {
@@ -9,8 +9,10 @@ pub type Config {
     secret: String,
     admin_token: String,
     output_dir: String,
+    data_dir: String,
     port: Int,
     cookie_max_age: Int,
+    import_legacy: Bool,
   )
 }
 
@@ -30,6 +32,11 @@ pub fn load_with(
   let admin_token = read_env("GLEAMCMS_ADMIN_TOKEN") |> result.unwrap("")
   let output_dir =
     read_env("GLEAMCMS_OUTPUT_DIR") |> result.unwrap("gleamcms_output")
+  let data_dir =
+    read_env("GLEAMCMS_DATA_DIR") |> result.unwrap("Mnesia.nonode@nohost")
+  let import_legacy_raw =
+    read_env("GLEAMCMS_IMPORT_LEGACY") |> result.unwrap("false")
+  let import_legacy = string.lowercase(string.trim(import_legacy_raw)) == "true"
   let port_result = read_port(read_env)
   let cookie_max_age_result = read_cookie_max_age(read_env)
 
@@ -52,6 +59,10 @@ pub fn load_with(
     True -> ["GLEAMCMS_OUTPUT_DIR cannot be empty", ..errors]
     False -> errors
   }
+  let errors = case is_blank(data_dir) {
+    True -> ["GLEAMCMS_DATA_DIR cannot be empty", ..errors]
+    False -> errors
+  }
   let errors = case port_result {
     Ok(_) -> errors
     Error(message) -> [message, ..errors]
@@ -63,7 +74,15 @@ pub fn load_with(
 
   case errors, port_result, cookie_max_age_result {
     [], Ok(port), Ok(cookie_max_age) ->
-      Ok(Config(secret, admin_token, output_dir, port, cookie_max_age))
+      Ok(Config(
+        secret,
+        admin_token,
+        output_dir,
+        data_dir,
+        port,
+        cookie_max_age,
+        import_legacy,
+      ))
     _, _, _ -> Error(errors)
   }
 }
@@ -78,6 +97,14 @@ pub fn admin_token(cfg: Config) -> String {
 
 pub fn output_dir(cfg: Config) -> String {
   cfg.output_dir
+}
+
+pub fn data_dir(cfg: Config) -> String {
+  cfg.data_dir
+}
+
+pub fn import_legacy(cfg: Config) -> Bool {
+  cfg.import_legacy
 }
 
 pub fn port(cfg: Config) -> Int {
@@ -132,5 +159,5 @@ fn is_blank(value: String) -> Bool {
 }
 
 fn env(name: String) -> Result(String, Nil) {
-  designer.get_env(name)
+  ffi.get_env(name)
 }

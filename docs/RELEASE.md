@@ -21,7 +21,12 @@ Tracked source includes:
 - `gleam.toml` and `manifest.toml` dependency declarations and lock state
 - `README.md` configuration and project documentation
 
-Generated build output, local AaronDB/Mnesia data, generated sites, editor secrets, and OS/editor noise are intentionally excluded by `.gitignore`.
+- `scripts/restore_drill.sh` creates an isolated Mnesia fixture, archives it,
+  extracts it into a separate restore directory, verifies the core files, and
+  prints an archive checksum.
+- The latest local drill is recorded in `docs/RESTORE_DRILL.md`. It proves
+  archive integrity and isolated extraction; production backup encryption,
+  retention, and operator sign-off remain deployment responsibilities.
 
 ## Reproducibility check
 

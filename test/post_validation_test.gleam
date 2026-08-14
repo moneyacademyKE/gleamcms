@@ -1,5 +1,6 @@
 import aarondb
-import gleamcms/db/post
+import gleam/option.{Some}
+import gleamcms/db/post.{Published}
 import gleamcms/db/schema
 import gleeunit/should
 
@@ -10,8 +11,7 @@ pub fn valid_slug_passes_test() {
   |> should.be_ok
 }
 
-/// A malformed slug is rejected before it can reach the database. This is the
-/// guarantee that save_post relies on (it validates before constructing facts).
+/// A malformed slug is rejected before it can reach the database.
 pub fn invalid_slug_rejected_test() {
   post.new_post("1", "Hello", "Bad Slug!", "body")
   |> post.validate_post
@@ -49,4 +49,32 @@ pub fn empty_title_rejected_test() {
   post.new_post("1", "", "ok-slug", "body")
   |> post.validate_post
   |> should.be_error
+}
+
+/// Optional fields like published_at and featured_image persist and query round-trip.
+pub fn optional_attributes_round_trip_test() {
+  let db = aarondb.new()
+  schema.init_schema(db)
+
+  let p =
+    post.new_post("post-1", "Featured Post", "featured-post", "Content")
+    |> post.with_status(Published)
+    |> post.with_published_at(Some(1_700_000_000))
+    |> post.with_featured_image(Some("https://example.com/image.png"))
+
+  post.save_post(db, p) |> should.be_ok
+
+  let assert Ok(fetched) = post.get_post_by_slug(db, "featured-post")
+  post.get_published_at(fetched) |> should.equal(Some(1_700_000_000))
+  post.get_featured_image(fetched)
+  |> should.equal(Some("https://example.com/image.png"))
+
+  let all = post.get_all_published(db)
+  let assert Ok(first) = case all {
+    [head, ..] -> Ok(head)
+    _ -> Error(Nil)
+  }
+  post.get_published_at(first) |> should.equal(Some(1_700_000_000))
+  post.get_featured_image(first)
+  |> should.equal(Some("https://example.com/image.png"))
 }

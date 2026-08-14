@@ -115,41 +115,96 @@ fn do_build(
   theme_posts: List(Post),
 ) -> BuildReport {
   let slug = slugify(theme_name)
-  let output_dir = config.output_dir(cfg) <> "/" <> slug
-  let _ = simplifile.create_directory_all(output_dir)
+  let root = config.output_dir(cfg)
+  let _ = simplifile.create_directory_all(root)
+  let output_dir = root <> "/" <> slug
+  let staging_dir = output_dir <> ".staging"
 
-  let t = theme_provider.get_by_name(theme_name)
+  let _ = simplifile.delete(staging_dir)
+  let staging_created = simplifile.create_directory_all(staging_dir)
 
-  // Per-post pages
-  let results =
-    list.map(theme_posts, fn(p) {
-      let path = output_dir <> "/" <> post.get_slug(p) <> ".html"
-      case simplifile.write(path, render_post(p, t)) {
-        Ok(_) -> Ok(path)
-        Error(e) -> Error("Failed " <> path <> ": " <> string.inspect(e))
+  case staging_created {
+    Error(e) ->
+      BuildReport(
+        theme_name: theme_name,
+        pages_written: 0,
+        output_dir: output_dir,
+        errors: ["Failed to create staging directory: " <> string.inspect(e)],
+      )
+    Ok(_) -> {
+      let t = theme_provider.get_by_name(theme_name)
+
+      let post_results =
+        list.map(theme_posts, fn(p) {
+          let path = staging_dir <> "/" <> post.get_slug(p) <> ".html"
+          case simplifile.write(path, render_post(p, t)) {
+            Ok(_) -> Ok(path)
+            Error(e) -> Error("Failed " <> path <> ": " <> string.inspect(e))
+          }
+        })
+
+      let post_errors =
+        list.filter_map(post_results, fn(r) {
+          case r {
+            Error(e) -> Ok(e)
+            Ok(_) -> Error(Nil)
+          }
+        })
+
+      let index_res =
+        simplifile.write(
+          staging_dir <> "/index.html",
+          render_index(theme_posts, t),
+        )
+      let rss_res =
+        simplifile.write(staging_dir <> "/feed.xml", render_rss(theme_posts))
+
+      let aux_errors = []
+      let aux_errors = case index_res {
+        Ok(_) -> aux_errors
+        Error(e) -> ["Failed index.html: " <> string.inspect(e), ..aux_errors]
       }
-    })
-
-  let errors =
-    list.filter_map(results, fn(r) {
-      case r {
-        Error(e) -> Ok(e)
-        Ok(_) -> Error(Nil)
+      let aux_errors = case rss_res {
+        Ok(_) -> aux_errors
+        Error(e) -> ["Failed feed.xml: " <> string.inspect(e), ..aux_errors]
       }
-    })
-  let written = list.length(results) - list.length(errors)
 
-  // Index + RSS
-  let _ =
-    simplifile.write(output_dir <> "/index.html", render_index(theme_posts, t))
-  let _ = simplifile.write(output_dir <> "/feed.xml", render_rss(theme_posts))
+      let all_errors = list.append(post_errors, aux_errors)
 
-  BuildReport(
-    theme_name: theme_name,
-    pages_written: written + 1,
-    output_dir: output_dir,
-    errors: errors,
-  )
+      case all_errors {
+        [] -> {
+          let _ = simplifile.delete(output_dir)
+          case simplifile.rename(at: staging_dir, to: output_dir) {
+            Ok(_) ->
+              BuildReport(
+                theme_name: theme_name,
+                pages_written: list.length(theme_posts) + 1,
+                output_dir: output_dir,
+                errors: [],
+              )
+            Error(e) -> {
+              let _ = simplifile.delete(staging_dir)
+              BuildReport(
+                theme_name: theme_name,
+                pages_written: 0,
+                output_dir: output_dir,
+                errors: ["Failed atomic swap: " <> string.inspect(e)],
+              )
+            }
+          }
+        }
+        errors -> {
+          let _ = simplifile.delete(staging_dir)
+          BuildReport(
+            theme_name: theme_name,
+            pages_written: 0,
+            output_dir: output_dir,
+            errors: errors,
+          )
+        }
+      }
+    }
+  }
 }
 
 /// List theme slugs that have already been generated on disk.

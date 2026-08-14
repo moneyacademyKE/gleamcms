@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/list
 import gleam/option.{None, Some}
+import gleamcms/content/markdown
 import gleamcms/db/post.{type Post}
 import gleamcms/theme.{type Theme, Theme}
 
@@ -139,13 +140,18 @@ pub fn post_view(post: Post) -> String {
     None -> "Draft"
   }
 
+  let rendered_content =
+    post.get_content(post)
+    |> markdown.parse
+    |> markdown.to_html
+
   "<article>
     <header>
       <h1>" <> post.get_title(post) <> "</h1>
       <div class=\"meta\">" <> date_str <> "</div>
     </header>
     <div class=\"content\">
-      " <> post.get_content(post) <> "
+      " <> rendered_content <> "
     </div>
   </article>"
 }

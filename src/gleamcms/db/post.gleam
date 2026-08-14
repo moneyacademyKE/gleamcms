@@ -3,7 +3,7 @@ import aarondb/fact.{Str}
 import aarondb/shared/ast.{Val, Var}
 import gleam/dict
 import gleam/list
-import gleam/option.{type Option, None}
+import gleam/option.{type Option, None, Some}
 import gleam/regexp
 import gleam/result
 import gleam/string
@@ -72,6 +72,10 @@ pub fn with_status(post: Post, status: PostStatus) -> Post {
   Post(..post, status: status)
 }
 
+pub fn with_published_at(post: Post, published_at: Option(Int)) -> Post {
+  Post(..post, published_at: published_at)
+}
+
 pub fn with_featured_image(post: Post, image: Option(String)) -> Post {
   Post(..post, featured_image: image)
 }
@@ -116,6 +120,16 @@ pub fn save_post(db: aarondb.Db, post: Post) -> Result(Nil, List(String)) {
     #(eid, "cms.post/section_type", Str(validated_post.section_type)),
   ]
 
+  let facts = case validated_post.published_at {
+    Some(ts) -> [#(eid, "cms.post/published_at", fact.Int(ts)), ..facts]
+    None -> facts
+  }
+
+  let facts = case validated_post.featured_image {
+    Some(img) -> [#(eid, "cms.post/featured_image", Str(img)), ..facts]
+    None -> facts
+  }
+
   // Wrap in atomic transaction
   case aarondb.transact(db, facts) {
     Ok(_) -> Ok(Nil)
@@ -151,17 +165,31 @@ pub fn get_post_by_slug(db: aarondb.Db, slug: String) -> Result(Post, Nil) {
           Ok(Str(content)),
           Ok(Str(status)),
           Ok(Str(section_type))
-        ->
+        -> {
+          let eid = fact.deterministic_uid(id)
+          let published_at = case
+            aarondb.get_one(db, eid, "cms.post/published_at")
+          {
+            Ok(fact.Int(ts)) -> Some(ts)
+            _ -> None
+          }
+          let featured_image = case
+            aarondb.get_one(db, eid, "cms.post/featured_image")
+          {
+            Ok(Str(img)) -> Some(img)
+            _ -> None
+          }
           Ok(Post(
             id: id,
             title: title,
             slug: slug,
             content: content,
             status: string_to_status(status),
-            published_at: None,
-            featured_image: None,
+            published_at: published_at,
+            featured_image: featured_image,
             section_type: section_type,
           ))
+        }
         _, _, _, _, _ -> Error(Nil)
       }
     Error(_) -> Error(Nil)
@@ -315,7 +343,31 @@ pub fn get_all_published(db: aarondb.Db) -> List(Post) {
         Ok(Str(slug)),
         Ok(Str(content)),
         Ok(Str(section_type))
-      -> Ok(Post(id, title, slug, content, Published, None, None, section_type))
+      -> {
+        let eid = fact.deterministic_uid(id)
+        let published_at = case
+          aarondb.get_one(db, eid, "cms.post/published_at")
+        {
+          Ok(fact.Int(ts)) -> Some(ts)
+          _ -> None
+        }
+        let featured_image = case
+          aarondb.get_one(db, eid, "cms.post/featured_image")
+        {
+          Ok(Str(img)) -> Some(img)
+          _ -> None
+        }
+        Ok(Post(
+          id: id,
+          title: title,
+          slug: slug,
+          content: content,
+          status: Published,
+          published_at: published_at,
+          featured_image: featured_image,
+          section_type: section_type,
+        ))
+      }
       _, _, _, _, _ -> Error(Nil)
     }
   })

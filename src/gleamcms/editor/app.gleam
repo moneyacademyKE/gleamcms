@@ -18,13 +18,12 @@ pub fn render() -> String {
   let names_json =
     "[" <> string.join(list.map(names, fn(n) { "\"" <> n <> "\"" }), ",") <> "]"
   element.to_string(
-    html.div([attribute.id("app")], [
+    html.div([attribute.id("app"), attribute.data("themes", names_json)], [
       html.link([
         attribute.rel("stylesheet"),
         attribute.href("/static/editor.css"),
       ]),
       view(Model("", "", "", Draft, "Default Dark", False, "")),
-      html.script([], "window.__GLEAMCMS_THEMES__=" <> names_json <> ";"),
       html.script(
         [attribute.type_("module"), attribute.src("/static/editor.js")],
         "",

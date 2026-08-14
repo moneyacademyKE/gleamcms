@@ -1,5 +1,9 @@
 (function() {
-  var names = window.__GLEAMCMS_THEMES__ || [];
+  var names = [];
+  var app = document.getElementById('app');
+  if (app && app.dataset.themes) {
+    try { names = JSON.parse(app.dataset.themes); } catch(e) { names = []; }
+  }
   var picker = document.getElementById('theme-picker');
   if (picker) {
     picker.innerHTML = '';

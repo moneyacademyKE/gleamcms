@@ -1,0 +1,38 @@
+name: GleamCMS CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      GLEAMCMS_SECRET: ci-only-secret
+      GLEAMCMS_ADMIN_TOKEN: ci-only-admin-token
+      GLEAMCMS_DATA_DIR: ${{ github.workspace }}/.ci-data
+      GLEAMCMS_OUTPUT_DIR: ${{ github.workspace }}/.ci-output
+      GLEAMCMS_PORT: "4317"
+      GLEAMCMS_COOKIE_MAX_AGE: "3600"
+      GLEAMCMS_IMPORT_LEGACY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "29.0.3"
+          gleam-version: "1.17.0"
+          rebar3-version: "3"
+          elixir-version: "1"
+      - name: Download dependencies
+        run: gleam deps download
+      - name: Check formatting
+        run: gleam format --check
+      - name: Build
+        run: gleam build
+      - name: Unit and security tests
+        run: gleam test
+      - name: Live HTTP smoke test
+        run: ./scripts/smoke_test.sh

@@ -1,0 +1,90 @@
+{
+  "project": "gleamcms",
+  "scope": "production-roadmap",
+  "status": "not-production-ready",
+  "source": {
+    "path": "~/Desktop/gleamcms",
+    "branch": "chore/gleamcms-provenance",
+    "remote_configured": false
+  },
+  "verification": [
+    {
+      "command": "gleam format --check",
+      "exit_status": 0,
+      "scope": "local repository"
+    },
+    {
+      "command": "gleam build",
+      "exit_status": 0,
+      "scope": "local repository"
+    },
+    {
+      "command": "gleam test",
+      "exit_status": 0,
+      "result": "22 passed, no failures",
+      "scope": "local repository"
+    },
+    {
+      "command": "./scripts/restore_drill.sh",
+      "exit_status": 0,
+      "result": "isolated archive/extraction passed; checksum recorded in docs/RESTORE_DRILL.md",
+      "scope": "isolated local Mnesia fixture"
+    },
+    {
+      "command": "./scripts/smoke_test.sh",
+      "exit_status": 0,
+      "result": "live HTTP smoke passed; evidence in .smoke/security4-4657",
+      "scope": "isolated local process with disposable credentials"
+    },
+    {
+      "command": "isolated Mnesia startup with GLEAMCMS_DATA_DIR",
+      "exit_status": 0,
+      "result": "datoms.DCD, LATEST.LOG, and schema.DAT created",
+      "scope": "isolated local storage directory"
+    }
+  ],
+  "changed_files": [
+    ".github/workflows/ci.yml",
+    ".gitignore",
+    "README.md",
+    "docs/OPERATIONS.md",
+    "docs/PERSISTENCE.md",
+    "docs/RELEASE.md",
+    "docs/RELEASE_CHECKLIST.md",
+    "docs/RESTORE_DRILL.md",
+    "docs/STAGING.md",
+    "docs/THREAT_MODEL.md",
+    "docs/verification-witness.json",
+    "priv/static/editor.js",
+    "scripts/restore_drill.sh",
+    "scripts/smoke_test.sh",
+    "src/gleamcms.gleam",
+    "src/gleamcms/config.gleam",
+    "src/gleamcms/editor/app.gleam",
+    "src/gleamcms/server/router.gleam",
+    "src/gleamcms_httpc_ffi.erl"
+  ],
+  "environment_scope": {
+    "credentials": "disposable/local or staging-only; no production credentials used",
+    "data": "isolated local Mnesia directories for startup and restore probes",
+    "output": "isolated local generated-output directories",
+    "toolchain": "Gleam 1.17.0, Erlang/OTP 29.0.3"
+  },
+  "known_risks": [
+    "No hosted remote or production deployment is configured.",
+    "CI configuration exists but has not run on a hosted CI service.",
+    "Staging smoke evidence and operator sign-off are not yet available.",
+    "Login rate limiting is deferred.",
+    "The current health endpoint combines liveness and readiness.",
+    "Mnesia persistence is single-node and requires operator-managed encrypted backups."
+  ],
+  "deferred_work": [
+    "Rate limiting and lockout",
+    "Richer metrics and correlation IDs",
+    "Multi-instance coordination",
+    "Production TLS/proxy configuration",
+    "Backup retention/encryption automation",
+    "Product features"
+  ],
+  "verdict": "Release gates are substantially documented and locally verified, but production promotion is blocked until backup/restore evidence, CI execution, staging smoke evidence, and operator sign-off exist."
+}
