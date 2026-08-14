@@ -4,6 +4,11 @@ description = "A fact-oriented, sovereign CMS built on the AaronDB datalog engin
 gleam = ">= 1.7.0"
 licences = ["MIT"]
 
+[repository]
+type = "github"
+user = "moneyacademyKE"
+repo = "gleamcms"
+
 # gleamcms owns the web layer (wisp/mist/lustre/gleam_http/simplifile).
 # aarondb is depended on as a pure datalog engine.
 [dependencies]
