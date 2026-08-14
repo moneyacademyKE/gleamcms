@@ -1,5 +1,5 @@
 name = "gleamcms"
-version = "0.1.0"
+version = "0.2.0"
 description = "A fact-oriented, sovereign CMS built on the AaronDB datalog engine"
 gleam = ">= 1.7.0"
 licences = ["MIT"]
