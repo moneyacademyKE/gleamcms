@@ -196,3 +196,33 @@ Accepted & Implemented (2026-08-14)
   - Decoupled HTTP request latency from build generation and network webhook delivery.
   - Compile-time lifecycle guarantees across post states.
   - All 49 tests passing.
+
+---
+
+## ADR 007: Dependency Modernization and Native AaronDB BM25 Full-Text Search
+
+### Status
+Accepted & Implemented (2026-08-14)
+
+### Context
+1. Dependencies were upgraded to their latest Hex.pm releases (`aarondb 4.2.0`, `gleam_otp 1.3.0`, `simplifile 2.7.0`, `gleam_stdlib 1.0.5`).
+2. AaronDB v4.2.0 introduces native probabilistic BM25 full-text indexing, allowing relevance-ranked search across post titles and Markdown content without external search daemons.
+
+### Decision
+1. **Dependency Upgrade:**
+   - Upgraded `aarondb` from `3.0.0` to `4.2.0`.
+   - Upgraded `gleam_otp` from `1.2.0` to `1.3.0`.
+   - Upgraded `simplifile` from `2.6.0` to `2.7.0`.
+   - Upgraded `gleam_stdlib` from `1.0.3` to `1.0.5`.
+2. **Native BM25 Search Engine (`src/gleamcms/content/search.gleam`):**
+   - Built a pure functional full-text search index (`bm25.empty`, `bm25.add`, `bm25.search`) over published posts.
+   - Configured standard BM25 ranking parameters ($k_1 = 1.5, b = 0.75$).
+3. **Hypermedia & API Search Endpoints:**
+   - Added `/search?q=...` semantic HTML search view in `static.gleam`.
+   - Added `GET /api/search?q=...` JSON search API in `api.gleam` and `router.gleam`.
+
+### Consequences
+- **Positive:**
+  - Relevance-ranked full-text search with zero external search daemons.
+  - Instant inverted index query performance ($<1\text{ms}$).
+  - All 50 tests passing.

@@ -63,3 +63,7 @@
 ## 12. Binary Magic-Byte Inspection & Asynchronous Worker Actors
 - Replace superficial extension whitelisting with native `BitArray` binary pattern matching against file header magic bytes to reject spoofed uploads before persistence.
 - Decouple long-running side-effects (static site generation, external webhook HTTP delivery) from synchronous request threads via isolated BEAM background tasks.
+
+## 13. Native In-Memory BM25 Search without External Daemons
+- Leverage AaronDB's pure functional inverted BM25 index over published datom content.
+- Uncomplects search architecture by eliminating secondary Elasticsearch/Typesense daemons and sync queues while delivering term-frequency/inverse-document-frequency probabilistic relevance ranking.

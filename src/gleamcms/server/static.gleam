@@ -1,8 +1,11 @@
 import aarondb
 import gleam/list
+import gleam/result
 import gleam/string
 import gleamcms/builder/generator
 import gleamcms/config
+import gleamcms/content/search
+import gleamcms/db/post
 import gleamcms/editor/app as editor
 import wisp.{type Request, type Response}
 
@@ -157,13 +160,78 @@ pub fn serve_sites(_db: aarondb.Db, cfg: config.Config) -> Response {
 </head><body>
   <header>
     <h1>Generated Static Projections</h1>
-    <nav><a href=\"/admin\">← Back to Studio</a> | <a href=\"/\">Home</a></nav>
+    <nav><a href=\"/admin\">← Back to Studio</a> | <a href=\"/\">Home</a> | <a href=\"/search\">Search</a></nav>
   </header>
   <hr />
   <main>" <> body <> "</main>
   <hr />
   <footer><p><small>&copy; 2026 Sovereign Individual. Built with Pure Gleam.</small></p></footer>
 </body></html>"
+  wisp.ok()
+  |> wisp.html_body(html)
+}
+
+pub fn serve_search(req: Request, db: aarondb.Db) -> Response {
+  let query =
+    wisp.get_query(req)
+    |> list.key_find("q")
+    |> result.unwrap("")
+
+  let results = case query {
+    "" -> []
+    q -> search.search_published_posts(db, q)
+  }
+
+  let result_items =
+    list.map(results, fn(match) {
+      "<li><strong><a href=\"/posts/"
+      <> post.get_slug(match.post)
+      <> ".html\">"
+      <> post.get_title(match.post)
+      <> "</a></strong> <small>(BM25 Score: "
+      <> string.inspect(match.score)
+      <> ")</small></li>"
+    })
+
+  let results_body = case query {
+    "" ->
+      "<p>Enter a query above to perform BM25 probabilistic full-text search.</p>"
+    _ ->
+      case result_items {
+        [] -> "<p>No posts matched query: <em>" <> query <> "</em></p>"
+        _ -> "<ul>" <> string.join(result_items, "\n") <> "</ul>"
+      }
+  }
+
+  let html = "<!DOCTYPE html><html lang=\"en\"><head>
+  <meta charset=\"UTF-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+  <title>GleamCMS — Full-Text Search</title>
+</head><body>
+  <header>
+    <h1>AaronDB BM25 Full-Text Search</h1>
+    <nav><a href=\"/\">Home</a> | <a href=\"/admin\">Studio</a> | <a href=\"/sites\">Sites</a></nav>
+  </header>
+  <hr />
+  <main>
+    <form method=\"GET\" action=\"/search\">
+      <fieldset>
+        <legend>Search Query</legend>
+        <p>
+          <label>Query: <input type=\"text\" name=\"q\" value=\"" <> query <> "\" required /></label>
+          <button type=\"submit\">🔍 Search</button>
+        </p>
+      </fieldset>
+    </form>
+    <section>
+      <h2>Search Results</h2>
+      " <> results_body <> "
+    </section>
+  </main>
+  <hr />
+  <footer><p><small>&copy; 2026 Sovereign Individual. Powered by AaronDB BM25 Inverted Index.</small></p></footer>
+</body></html>"
+
   wisp.ok()
   |> wisp.html_body(html)
 }

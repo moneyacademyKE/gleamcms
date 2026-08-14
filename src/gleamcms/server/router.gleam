@@ -44,6 +44,7 @@ fn route_request(req: Request, db: aarondb.Db, cfg: config.Config) -> Response {
         }
       }
     ["health"] -> api.handle_health(db)
+    ["search"] -> static.serve_search(req, db)
     ["static", ..file] -> static.serve_static(req, file)
     ["gleamcms_output", ..file] -> static.serve_output(req, file, cfg)
     ["sites"] -> static.serve_sites(db, cfg)
@@ -51,6 +52,7 @@ fn route_request(req: Request, db: aarondb.Db, cfg: config.Config) -> Response {
       use <- auth.require_admin(req, cfg)
       case rest {
         ["posts"] -> api.handle_list_posts(db)
+        ["search"] -> api.handle_search(req, db)
         ["publish"] -> api.handle_publish(req, db)
         ["save"] -> api.handle_save(req, db)
         ["facts", "sync"] -> api.handle_sync(req, db, cfg)

@@ -12,6 +12,7 @@ import gleam/uri
 import gleamcms/ai/designer
 import gleamcms/builder/generator
 import gleamcms/config
+import gleamcms/content/search
 import gleamcms/db/post.{Published}
 import logging
 import wisp.{type Request, type Response}
@@ -344,5 +345,29 @@ pub fn handle_list_posts(db: aarondb.Db) -> Response {
       ])
     })
   let resp = json.to_string(json_posts)
+  wisp.ok() |> wisp.json_body(resp)
+}
+
+pub fn handle_search(req: Request, db: aarondb.Db) -> Response {
+  let query =
+    wisp.get_query(req)
+    |> list.key_find("q")
+    |> result.unwrap("")
+
+  let matches = case query {
+    "" -> []
+    q -> search.search_published_posts(db, q)
+  }
+
+  let json_matches =
+    json.array(matches, fn(m) {
+      json.object([
+        #("id", json.string(post.get_id(m.post))),
+        #("title", json.string(post.get_title(m.post))),
+        #("slug", json.string(post.get_slug(m.post))),
+        #("score", json.float(m.score)),
+      ])
+    })
+  let resp = json.to_string(json_matches)
   wisp.ok() |> wisp.json_body(resp)
 }

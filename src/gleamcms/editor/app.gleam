@@ -52,6 +52,8 @@ pub fn view(model: Model) -> Element(Nil) {
         element.text(" | "),
         html.a([attribute.href("/sites")], [element.text("Generated Sites")]),
         element.text(" | "),
+        html.a([attribute.href("/search")], [element.text("Search")]),
+        element.text(" | "),
         html.a([attribute.href("/health")], [element.text("Health Check")]),
       ]),
     ]),
