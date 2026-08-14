@@ -22,13 +22,60 @@ pub fn storage_mime_resolution_test() {
   storage.mime_for_extension("pdf") |> should.equal("application/pdf")
 }
 
+pub fn storage_magic_byte_sniffing_test() {
+  let png_bytes = <<0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00>>
+  let jpeg_bytes = <<0xFF, 0xD8, 0xFF, 0xE0, 0x00>>
+  let pdf_bytes = <<"%PDF-1.4", 0x0A>>
+  let webp_bytes = <<
+    0x52,
+    0x49,
+    0x46,
+    0x46,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x57,
+    0x45,
+    0x42,
+    0x50,
+  >>
+
+  storage.sniff_magic_mime(png_bytes) |> should.equal(Ok("image/png"))
+  storage.sniff_magic_mime(jpeg_bytes) |> should.equal(Ok("image/jpeg"))
+  storage.sniff_magic_mime(pdf_bytes) |> should.equal(Ok("application/pdf"))
+  storage.sniff_magic_mime(webp_bytes) |> should.equal(Ok("image/webp"))
+}
+
+pub fn storage_detects_and_rejects_spoofed_extensions_test() {
+  let adapter =
+    LocalStorage(
+      base_path: "test_media_output",
+      url_prefix: "/static/test_media",
+    )
+  // PDF content passed with .png extension
+  let pdf_content = <<"%PDF-1.4 Fake Image">>
+
+  storage.store(adapter, pdf_content, "png") |> should.be_error
+}
+
 pub fn storage_cas_deduplication_local_test() {
   let adapter =
     LocalStorage(
       base_path: "test_media_output",
       url_prefix: "/static/test_media",
     )
-  let content = bit_array.from_string("sample image data")
+  let content = <<
+    0x89,
+    0x50,
+    0x4E,
+    0x47,
+    0x0D,
+    0x0A,
+    0x1A,
+    0x0A,
+    "valid image",
+  >>
 
   let assert Ok(asset1) = storage.store(adapter, content, "png")
   let assert Ok(asset2) = storage.store(adapter, content, "png")
@@ -56,9 +103,9 @@ pub fn storage_s3_adapter_url_generation_test() {
       access_key: "key",
       secret_key: "secret",
     )
-  let content = bit_array.from_string("s3 cloud image data")
+  let content = bit_array.from_string("s3 cloud text data")
 
-  let assert Ok(asset) = storage.store(adapter, content, "webp")
+  let assert Ok(asset) = storage.store(adapter, content, "txt")
   string.starts_with(
     asset.public_url,
     "https://my-media-bucket.s3.us-east-1.amazonaws.com/",

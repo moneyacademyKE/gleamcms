@@ -68,6 +68,23 @@ pub fn new_post(
   Post(id, title, slug, content, Draft, None, None, "content")
 }
 
+pub fn draft(id: String, title: String, slug: String, content: String) -> Post {
+  new_post(id, title, slug, content)
+}
+
+pub fn publish(post: Post, timestamp: Int) -> Result(Post, List(String)) {
+  let updated = Post(..post, status: Published, published_at: Some(timestamp))
+  validate_post(updated)
+}
+
+pub fn archive(post: Post) -> Post {
+  Post(..post, status: Archived)
+}
+
+pub fn is_published(post: Post) -> Bool {
+  post.status == Published
+}
+
 pub fn with_status(post: Post, status: PostStatus) -> Post {
   Post(..post, status: status)
 }

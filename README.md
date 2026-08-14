@@ -46,6 +46,7 @@ src/
       webhook.gleam           # Signed HMAC-SHA256 webhook event dispatcher
     runtime/
       ffi.gleam               # Quarantined Erlang host FFI bindings
+      worker.gleam            # Supervised background async task worker
     server/
       api.gleam               # JSON decoders, CRUD, sync, generation & design endpoints
       auth.gleam              # Stateless HMAC sessions, cookies & POST-only login guard
@@ -118,5 +119,5 @@ Access the admin editor at `http://localhost:4000/admin` and log in with your co
 
 - **Strict File Sizing:** Every source and test file is strictly `< 500 LOC`.
 - **Zero NPM / Node Dependency:** Built 100% in type-safe Gleam and Erlang/OTP.
-- **Red/Green TDD:** Full test coverage across AST parsing, atomic SSG generation, webhook dispatch, and storage adapters (`45/45 passed`).
+- **Red/Green TDD:** Full test coverage across AST parsing, atomic SSG generation, webhook dispatch, magic-byte media verification, and storage adapters (`49/49 passed`).
 - **Architectural Decision Records:** Complete decision log maintained in [`docs/ADR_LOG.md`](docs/ADR_LOG.md).

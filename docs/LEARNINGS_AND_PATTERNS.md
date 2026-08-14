@@ -59,3 +59,7 @@
 - Eliminate all client-side JavaScript execution, asset bundles, and stylesheet pipelines.
 - Model all user interactions (block template insertion, fact persistence, static site generation) through native HTML5 forms, hypermedia query navigation, and server-side pure Gleam projections.
 - Guarantees 0ms hydration, 100% universal accessibility, and immunity to DOM-based client vulnerabilities.
+
+## 12. Binary Magic-Byte Inspection & Asynchronous Worker Actors
+- Replace superficial extension whitelisting with native `BitArray` binary pattern matching against file header magic bytes to reject spoofed uploads before persistence.
+- Decouple long-running side-effects (static site generation, external webhook HTTP delivery) from synchronous request threads via isolated BEAM background tasks.

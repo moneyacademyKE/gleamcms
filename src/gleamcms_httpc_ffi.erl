@@ -1,5 +1,5 @@
 -module(gleamcms_httpc_ffi).
--export([post/3, get_env/1, hmac_sha256/2, run_gemini/2, configure_mnesia_dir/1]).
+-export([post/3, get_env/1, hmac_sha256/2, run_gemini/2, configure_mnesia_dir/1, spawn_task/1]).
 
 %% HMAC-SHA256, returned as lowercase hex. Used to sign the stateless admin
 %% session cookie. crypto is guaranteed running under the wisp/mist runtime.
@@ -70,3 +70,11 @@ get_env(Name) ->
         false -> {error, nil};
         Val -> {ok, list_to_binary(Val)}
     end.
+
+spawn_task(Fun) ->
+    erlang:spawn(fun() ->
+        try Fun()
+        catch _:_ -> ok
+        end
+    end),
+    nil.

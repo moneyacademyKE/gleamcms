@@ -22,3 +22,6 @@ pub fn post(
   headers: List(#(String, String)),
   body: String,
 ) -> Result(String, String)
+
+@external(erlang, "gleamcms_httpc_ffi", "spawn_task")
+pub fn spawn_task(task: fn() -> Nil) -> Nil

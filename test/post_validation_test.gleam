@@ -78,3 +78,19 @@ pub fn optional_attributes_round_trip_test() {
   post.get_featured_image(first)
   |> should.equal(Some("https://example.com/image.png"))
 }
+
+pub fn post_type_state_lifecycle_test() {
+  let draft_post = post.draft("10", "Draft Title", "draft-slug", "Draft body")
+  post.is_published(draft_post) |> should.be_false
+
+  let assert Ok(pub_post) = post.publish(draft_post, 1_700_000_000)
+  post.is_published(pub_post) |> should.be_true
+  post.get_published_at(pub_post) |> should.equal(Some(1_700_000_000))
+
+  let archived_post = post.archive(pub_post)
+  post.is_published(archived_post) |> should.be_false
+
+  // Publishing an invalid post returns error
+  let invalid_draft = post.draft("11", "", "bad slug!", "body")
+  post.publish(invalid_draft, 1_700_000_000) |> should.be_error
+}
