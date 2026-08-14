@@ -1,4 +1,5 @@
 import aarondb
+import gleam/bit_array
 import gleam/int
 import gleam/list
 import gleam/result
@@ -137,7 +138,8 @@ fn do_build(
       let post_results =
         list.map(theme_posts, fn(p) {
           let path = staging_dir <> "/" <> post.get_slug(p) <> ".html"
-          case simplifile.write(path, render_post(p, t)) {
+          let bits = bit_array.from_string(render_post(p, t))
+          case simplifile.write_bits(path, bits) {
             Ok(_) -> Ok(path)
             Error(e) -> Error("Failed " <> path <> ": " <> string.inspect(e))
           }
@@ -151,13 +153,12 @@ fn do_build(
           }
         })
 
+      let index_bits = bit_array.from_string(render_index(theme_posts, t))
       let index_res =
-        simplifile.write(
-          staging_dir <> "/index.html",
-          render_index(theme_posts, t),
-        )
-      let rss_res =
-        simplifile.write(staging_dir <> "/feed.xml", render_rss(theme_posts))
+        simplifile.write_bits(staging_dir <> "/index.html", index_bits)
+
+      let rss_bits = bit_array.from_string(render_rss(theme_posts))
+      let rss_res = simplifile.write_bits(staging_dir <> "/feed.xml", rss_bits)
 
       let aux_errors = []
       let aux_errors = case index_res {

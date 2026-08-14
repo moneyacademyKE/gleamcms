@@ -377,6 +377,7 @@ pub fn handle_search(req: Request, db: aarondb.Db) -> Response {
         #("title", json.string(post.get_title(m.post))),
         #("slug", json.string(post.get_slug(m.post))),
         #("score", json.float(m.score)),
+        #("snippet", json.string(m.snippet)),
       ])
     })
   let resp = json.to_string(json_matches)

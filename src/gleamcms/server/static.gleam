@@ -190,7 +190,9 @@ pub fn serve_search(req: Request, db: aarondb.Db) -> Response {
       <> post.get_title(match.post)
       <> "</a></strong> <small>(BM25 Score: "
       <> string.inspect(match.score)
-      <> ")</small></li>"
+      <> ")</small><p><small><em>"
+      <> match.snippet
+      <> "</em></small></p></li>"
     })
 
   let results_body = case query {

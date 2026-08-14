@@ -47,3 +47,10 @@ pub fn bm25_search_ranking_test() {
   let empty_results = search.search(posts, "Kubernetes")
   list.length(empty_results) |> should.equal(0)
 }
+
+pub fn search_snippet_extraction_test() {
+  let text =
+    "GleamCMS is built on top of the Erlang VM. It provides sovereign fault tolerance without external databases."
+  let snippet = search.extract_snippet(text, "sovereign", 60)
+  should.be_true(snippet != "")
+}

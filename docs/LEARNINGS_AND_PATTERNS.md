@@ -71,3 +71,7 @@
 ## 14. Cohesive Subsystem Wiring & Public Facade Design
 - Expose essential library interfaces (`start_server`, `init_db`, `search_posts`, `build_all_sites`, `save_post`, `upload_media`) directly on root package module.
 - Eliminate dangling or unrouted subsystems by ensuring every backend module (CAS media, BM25 search, webhooks) is fully reachable via HTTP API routes and semantic Studio forms.
+
+## 15. Zero-Copy Binary File Writes & Contextual Search Highlights
+- Direct `BitArray` binary writes via `simplifile.write_bits` avoid string duplication in static site generation.
+- Contextual search snippet extraction highlights matching keyword surroundings with clean word boundary slices.

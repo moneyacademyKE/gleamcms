@@ -254,3 +254,30 @@ Accepted & Implemented (2026-08-14)
   - High cohesion with single-responsibility module boundaries.
   - Automated background webhook event dispatch on post publish.
   - All 50 tests passing.
+
+---
+
+## ADR 009: Zero-Copy Binary Streams, Transaction Changefeeds, and Search Context Snippets
+
+### Status
+Accepted & Implemented (2026-08-14)
+
+### Context
+1. Static site generation suffered string heap duplication when creating HTML projections and feeds.
+2. Webhook dispatches and search reindexing required an explicit event abstraction to process Datalog transaction facts.
+3. BM25 full-text search results lacked excerpt context highlighting around search keywords.
+
+### Decision
+1. **Zero-Copy Binary Stream Writes (`generator.gleam`):**
+   - Switched from string-based file writes to direct `BitArray` binary writes via `simplifile.write_bits(path, bit_array.from_string(...))`.
+2. **Reactive Transaction Changefeeds (`changefeed.gleam`):**
+   - Created `events/changefeed.gleam` with `process_changes` and `project_change` to decouple transaction events from webhook and worker actors.
+3. **BM25 Search Context Snippet Extraction (`search.gleam`):**
+   - Implemented `extract_snippet` to extract context-rich excerpt strings surrounding query keywords for both HTML and JSON search endpoints.
+
+### Consequences
+- **Positive:**
+  - Reduced memory pressure during bulk static site projections.
+  - Contextual snippet previews on full-text search queries.
+  - Clean reactive transaction event processing model.
+  - All 52 tests passing.
